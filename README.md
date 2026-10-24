@@ -4,36 +4,9 @@ A client-side Roblox module that gives the player's character two physics-driven
 
 There are no animation assets. Arm motion comes from a spring simulation fed by movement, camera, and falling state, so the arms sway, drag, and flail in response to how the player moves.
 
-## Features
-
-- **Independent arms.** `MouseButton1` controls the left arm and `MouseButton2` controls the right arm.
-- **Spring-driven pose.** Each arm's rotation is a damped spring chasing a target angle, so transitions between idle, raised, and falling poses feel weighty rather than snapped.
-- **Movement response.** The arms bob while idle, bob faster while moving, lag behind velocity on all three axes, and swing with acceleration and deceleration.
-- **Raise and release kicks.** Raising or releasing an arm adds a randomized impulse to the spring for a slightly different feel every time.
-- **Fall reaction.** Once downward velocity passes a threshold, both unraised arms blend toward a flailing pose with extra wobble.
-- **Physics grabbing.** A raised arm grabs the nearest valid part with `AlignPosition` and `AlignOrientation`, with force and torque scaled by the part's mass.
-- **Opt-out tag.** Parts tagged `NonInteractable` can never be grabbed.
-- **Optional cursor.** A `BillboardGui` on each grip attachment can show a cursor image while the arm is raised.
-
-## Files
-
-| File              | Purpose                                                              |
-| ----------------- | -------------------------------------------------------------------- |
-| `Interaction.luau` | The module: arm rig, spring animation, grab logic, input handling   |
-| `Constant.luau`    | All tuning values, poses, and asset IDs                             |
-
-`Start()` connects the input handlers, hooks `CharacterAdded`, and sets up the current character if one already exists. Call it once.
-
 ## How It Works
 
 ### Arm rig
-
-On every character spawn, the module:
-
-1. Destroys the `Motor6D`, `Weld`, and `WeldConstraint` joints attached to each arm.
-2. Sets each arm to `Anchored = true` and `CanCollide = false`.
-3. Creates a cursor `BillboardGui` on each grip attachment.
-4. Connects a `RenderStepped` loop that places the arms every frame.
 
 Each frame, a shoulder `CFrame` is built from the torso position and the camera's rotation, then offset by a per-arm pivot and roll. The spring angles are applied on top, and the arm is shifted by half its length so it rotates about the shoulder.
 
@@ -141,10 +114,3 @@ collectionService:AddTag(workspace.Door, "NonInteractable")
 
 - `GRAB_RADIUS` is `0.1` studs, so a part must be almost touching the grip attachment to be grabbed. Increase it for a more forgiving reach.
 - To make the arms looser and floppier, lower `SPRING_STIFFNESS` or `SPRING_DAMPING`. To make them snappier, raise them.
-
-## Limitations
-
-- **Local only.** Arms are positioned on the client, so other players do not see them move.
-- **Network ownership.** Grab constraints are created on the client, so physics on a grabbed part only behaves correctly when that client owns the part.
-- **Unused constants.** `IDLE_TORQUE`, `IDLE_RESPONSIVENESS`, `RAISE_TORQUE`, and `RAISE_RESPONSIVENESS` are defined in `Constant.luau` but not read by the module. The hover cursor IDs are commented out.
-- **R6 only.** Arm names, pivot offsets, and the torso lookup assume an R6 rig.
